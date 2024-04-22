@@ -23,6 +23,7 @@
 // LECTURE CLAVIER
 //******************************************************//
 
+
 // Version modifiée de la fonction: litEtValideChaine (cf. TP6 de l'UE I2011)
 
 int readLimitedLine (char* s, int sz) {
