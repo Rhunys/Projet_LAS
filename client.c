@@ -8,7 +8,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-#include "messages.h"
+#include "message.h"
 #include "utils_v1.h"
 
 /**
@@ -25,16 +25,14 @@ int initSocketClient(char *serverIP, int serverPort)
 	return sockfd;
 }
 
-int main(int argc, char **argv)
-
-{
+int main(int argc, char **argv){
 
 	char pseudo[MAX_PSEUDO];
 	int sockfd;
 	int ret;
 
 	StructMessage msg;
-	char c;
+	//char c;
 
 	/* retrieve player name */
 	printf("Bienvenue dans le programe d'inscription au serveur de jeu\n");
@@ -52,8 +50,8 @@ int main(int argc, char **argv)
 	/* wait server response */
 	sread(sockfd, &msg, sizeof(msg));
 
-	switch (msg.code)
-	{
+	switch (msg.code){
+
 	case INSCRIPTION_OK:
 		printf("Réponse du serveur : Inscription acceptée\n");
 		break;
@@ -69,14 +67,14 @@ int main(int argc, char **argv)
 	/* wait start of game or cancel */
 	sread(sockfd, &msg, sizeof(msg));
 
-	if (msg.code == START_GAME)
-	{
+	if (msg.code == START_GAME){
 	
 	}
-	else
-	{
+
+	else{
 		printf("PARTIE ANNULEE\n");
 		sclose(sockfd);
 	}
+	
 	return 0;
 }
