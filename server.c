@@ -14,6 +14,7 @@
 #define PERM 0666 
 #define KEY 123
 #define TAILLE 80
+#define LOCAL_HOST "127.0.0.1"
 
 typedef struct Player{
 	char pseudo[MAX_PSEUDO];
@@ -54,6 +55,28 @@ int initSocketServer(int port){
 	slisten(sockfd, BACKLOG);
 
 	return sockfd;
+}
+
+void run(void * argv, void * argv2){
+	int *pipefd = argv;
+	int *sockfd = (int *)argv2;
+	
+	sclose(pipefd[1]);
+	// accept client connection
+ 	int newsockfd = saccept(*sockfd);
+			 
+	int tuileAuHasard; 
+
+	sread(pipefd[0], &tuileAuHasard, sizeof(tuileAuHasard));
+	printf("Valeur reçue par le parent : %d\n", tuileAuHasard);
+
+	swrite(newsockfd,&tuileAuHasard,sizeof(tuileAuHasard));
+	printf("Serveur envoie au client : %d\n", tuileAuHasard);
+
+	sclose(newsockfd);
+
+	sclose(pipefd[0]);
+
 }
 
 int main(int argc, char **argv){
@@ -130,19 +153,20 @@ int main(int argc, char **argv){
 	if(msg.code == START_GAME){
 		printf("La partie va commencer \n");
 
-		// 1/ Création du Pipe 
-		int pipefd[2];
-		spipe(pipefd); 
-
-		// Creation des serveurs fils 
-		int childId = sfork();
-
-		
-
 		// filedes[0] -> lire le pipe
 		// filedes[1] -> écrire sur pipe
+		for(int i = 0 ; i < MAX_PLAYERS; i ++){
+			printf("Création du server fils numéro : %d \n " , i);
+			// 1/ Création du Pipe 
+			int pipefd[2];
+			spipe(pipefd); 
 
-		if(childId > 0){
+			/*int pipefd2[2];
+			spipe(pipefd2);*/
+
+			sockfd = initSocketServer(SERVER_PORT);
+			
+			fork_and_run2(run, pipefd,&sockfd);
 
 			sclose(pipefd[0]);
 
@@ -151,21 +175,6 @@ int main(int argc, char **argv){
 			nwrite(pipefd[1], &tuileAuHasard, sizeof(tuileAuHasard));
 
 			sclose(pipefd[1]);
-
-
-		}
-		else{
-
-			sclose(pipefd[1]);
-			 
-			int tuileAuHasard; 
-
-			sread(pipefd[0], &tuileAuHasard, sizeof(tuileAuHasard));
-			printf("Valeur reçue par l'enfant : %d\n", tuileAuHasard);
-
-			sclose(pipefd[0]);
-
-
 		}
 
 	}
