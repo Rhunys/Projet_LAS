@@ -132,49 +132,4 @@ int main(int argc, char **argv){
 	else{
 		
 	}
-    
-    /*
-	// GAME PART
-	int nbPlayersAlreadyPlayed = 0;
-
-	// init poll
-	for (i = 0; i < MAX_PLAYERS; i++)
-	{
-		fds[i].fd = tabPlayers[i].sockfd;
-		fds[i].events = POLLIN;
-	}
-	// loop game
-	while (nbPlayersAlreadyPlayed < MAX_PLAYERS)
-	{
-		// poll during 1 second
-		ret = poll(fds, MAX_PLAYERS, 1000);
-		checkNeg(ret, "server poll error");
-
-		if (ret == 0)
-			continue;
-
-		// check player something to read
-		for (i = 0; i < MAX_PLAYERS; i++)
-		{
-			if (fds[i].revents & POLLIN)
-			{
-				ret = sread(tabPlayers[i].sockfd, &msg, sizeof(msg));
-				// tester si la connexion du client a été fermée: close(sockfd) ==> read renvoie 0
-				// OU utiliser un tableau de booléens fds_invalid[i] pour indiquer
-				// qu'un socket a été traité et ne doit plus l'être (cf. exemple19_avec_poll)
-				// printf("poll detected POLLIN event on client socket %d (%s)... %s", tabPlayers[i].sockfd, tabPlayers[i].pseudo, ret == 0 ? "this socket is closed!\n" : "\n");
-
-				if (ret != 0)
-				{
-					tabPlayers[i].shot = msg.code;
-					printf("%s joue %s\n", tabPlayers[i].pseudo, codeToStr(msg.code));
-					nbPlayersAlreadyPlayed++;
-				}
-			}
-		}
-	}
-
-	disconnect_players(tabPlayers, nbPLayers);
-	sclose(sockfd);
-	return 0;*/
 }

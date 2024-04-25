@@ -44,7 +44,7 @@ int main(int argc, char **argv){
 	msg.code = INSCRIPTION_REQUEST;
 
 	sockfd = initSocketClient(SERVER_IP, SERVER_PORT);
-
+	
 	swrite(sockfd, &msg, sizeof(msg));
 
 	/* wait server response */

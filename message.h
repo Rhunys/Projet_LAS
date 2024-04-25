@@ -11,7 +11,6 @@
 #define START_GAME 13
 #define CANCEL_GAME 14
 
-
 /* struct message used between server and client */
 typedef struct
 {
