@@ -66,8 +66,20 @@ int main(int argc, char **argv){
 
 	/* wait start of game or cancel */
 	sread(sockfd, &msg, sizeof(msg));
+	
+	int pipefd[2];
+	spipe(pipefd); 
 
+	int tuile;
+	int case;
 	if (msg.code == START_GAME){
+		//création de la grille
+		sread(pipefd[0], &tuile, sizeof(tuile));
+		printf("Dans quelle case de votre grille souhaitez vous placer la tuile %d ?")
+		sread(0, &case, 2);
+		nwrite(pipefd[1], &case, sizeof(case));
+
+
 	
 	}
 
