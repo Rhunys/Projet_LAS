@@ -73,12 +73,18 @@ int main(int argc, char **argv){
 	spipe(pipefd); 
 
 	//int tuile;
-	
+	int placement;
 	if (msg.code == START_GAME){
 		
 		printf("La partie va commencer \n ");
 		sread(sockfd,&tuileAuHasard,sizeof(int));
-		printf("Client recois du server : %d\n", tuileAuHasard);
+
+		sockfd = initSocketClient(SERVER_IP, SERVER_PORT);
+		printf("Voici la tuile à placer : %d\nOù souhaitez vous la placer ? \n", tuileAuHasard);
+		scanf("%d", &placement);
+		swrite(sockfd,&placement,sizeof(int));
+
+	
 
 		//création de la grille
 		/*sread(pipefd[0], &tuile, sizeof(tuile));

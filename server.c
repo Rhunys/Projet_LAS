@@ -170,6 +170,10 @@ int main(int argc, char **argv){
 			nwrite(pipefd[1], &tuileAuHasard, sizeof(tuileAuHasard));
 
 			sclose(pipefd[1]);
+			newsockfd = accept(sockfd, NULL, NULL);
+			int placement;
+			sread(newsockfd, &placement, sizeof(int));
+			printf("le client place la tuile à l'emplacement %d\n", placement);
 		}
 		sleep(5);
 
