@@ -30,9 +30,10 @@ int main(int argc, char **argv){
 	char pseudo[MAX_PSEUDO];
 	int sockfd;
 	int ret;
+	int tuileAuHasard;
 
 	StructMessage msg;
-	//char c;
+	
 
 	/* retrieve player name */
 	printf("Bienvenue dans le programe d'inscription au serveur de jeu\n");
@@ -44,8 +45,9 @@ int main(int argc, char **argv){
 	msg.code = INSCRIPTION_REQUEST;
 
 	sockfd = initSocketClient(SERVER_IP, SERVER_PORT);
-
+	
 	swrite(sockfd, &msg, sizeof(msg));
+
 
 	/* wait server response */
 	sread(sockfd, &msg, sizeof(msg));
@@ -66,8 +68,26 @@ int main(int argc, char **argv){
 
 	/* wait start of game or cancel */
 	sread(sockfd, &msg, sizeof(msg));
+	
+	int pipefd[2];
+	spipe(pipefd); 
 
+	//int tuile;
+	
 	if (msg.code == START_GAME){
+		
+		printf("La partie va commencer \n ");
+		sread(sockfd,&tuileAuHasard,sizeof(int));
+		printf("Client recois du server : %d\n", tuileAuHasard);
+
+		//création de la grille
+		/*sread(pipefd[0], &tuile, sizeof(tuile));
+		printf("Dans quelle case de votre grille souhaitez vous placer la tuile %d ?");
+		sread(0, &case, 2);
+		nwrite(pipefd[1], &case, sizeof(case));*/
+		
+
+
 	
 	}
 

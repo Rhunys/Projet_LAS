@@ -10,11 +10,11 @@
 
 #define MAX_PLAYERS 2
 #define BACKLOG 5
-#define TIME_INSCRIPTION 30
+#define TIME_INSCRIPTION 20
 #define PERM 0666 
 #define KEY 123
 #define TAILLE 80
-#define LOCAL_HOST "127.0.0.1"
+
 
 typedef struct Player{
 	char pseudo[MAX_PSEUDO];
@@ -59,21 +59,18 @@ int initSocketServer(int port){
 
 void run(void * argv, void * argv2){
 	int *pipefd = argv;
-	int *sockfd = (int *)argv2;
-	
-	sclose(pipefd[1]);
-	// accept client connection
- 	int newsockfd = saccept(*sockfd);
+	int sockfd = *(int *)argv2;
 			 
 	int tuileAuHasard; 
 
 	sread(pipefd[0], &tuileAuHasard, sizeof(tuileAuHasard));
 	printf("Valeur reçue par le parent : %d\n", tuileAuHasard);
 
-	swrite(newsockfd,&tuileAuHasard,sizeof(tuileAuHasard));
+
+	swrite(sockfd,&tuileAuHasard,sizeof(int));
 	printf("Serveur envoie au client : %d\n", tuileAuHasard);
 
-	sclose(newsockfd);
+	sleep(2);
 
 	sclose(pipefd[0]);
 
@@ -163,10 +160,8 @@ int main(int argc, char **argv){
 
 			/*int pipefd2[2];
 			spipe(pipefd2);*/
-
-			sockfd = initSocketServer(SERVER_PORT);
 			
-			fork_and_run2(run, pipefd,&sockfd);
+			fork_and_run2(run, pipefd,&tabPlayers[i].sockfd);
 
 			sclose(pipefd[0]);
 
@@ -176,6 +171,7 @@ int main(int argc, char **argv){
 
 			sclose(pipefd[1]);
 		}
+		sleep(5);
 
 	}
 	
