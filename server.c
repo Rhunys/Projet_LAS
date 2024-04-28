@@ -57,9 +57,10 @@ int initSocketServer(int port){
 	return sockfd;
 }
 
-void run(void * argv, void * argv2){
+void run(void * argv, void * argv2, void * argv3){
 	int *pipefd = argv;
-	int sockfd = *(int *)argv2;
+	int *pipefd2 = argv2;
+	int sockfd = *(int *)argv3;
 			 
 	int tuileAuHasard; 
 
@@ -73,6 +74,16 @@ void run(void * argv, void * argv2){
 	sleep(2);
 
 	sclose(pipefd[0]);
+
+	int emplacement; 
+
+	sread(sockfd,&emplacement,sizeof(int));
+	printf("Le client a décide de placer sa tuile en %d \n", emplacement);
+
+	swrite(pipefd2[1],&emplacement,sizeof(int));
+	printf("envoie de l'emplacement au server");
+
+	sclose(pipefd2[1]);
 
 }
 
@@ -153,15 +164,18 @@ int main(int argc, char **argv){
 		// filedes[0] -> lire le pipe
 		// filedes[1] -> écrire sur pipe
 		for(int i = 0 ; i < MAX_PLAYERS; i ++){
-			printf("Création du server fils numéro : %d \n " , i);
+			
+			while (1)
+			{
+				printf("Création du server fils numéro : %d \n " , i);
 			// 1/ Création du Pipe 
 			int pipefd[2];
 			spipe(pipefd); 
 
-			/*int pipefd2[2];
-			spipe(pipefd2);*/
+			int pipefd2[2];
+			spipe(pipefd2);
 			
-			fork_and_run2(run, pipefd,&tabPlayers[i].sockfd);
+			fork_and_run3(run, pipefd, pipefd2,&tabPlayers[i].sockfd);
 
 			sclose(pipefd[0]);
 
@@ -170,6 +184,16 @@ int main(int argc, char **argv){
 			nwrite(pipefd[1], &tuileAuHasard, sizeof(tuileAuHasard));
 
 			sclose(pipefd[1]);
+
+			sclose(pipefd2[1]);
+			int placement;
+			sread(pipefd2[0], &placement, sizeof(int));
+			printf("le client place la tuile à l'emplacement %d\n", placement);
+
+			sclose(pipefd2[0]);
+			}
+			
+			
 		}
 		sleep(5);
 

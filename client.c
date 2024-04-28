@@ -76,9 +76,17 @@ int main(int argc, char **argv){
 	
 	if (msg.code == START_GAME){
 		
-		printf("La partie va commencer \n ");
-		sread(sockfd,&tuileAuHasard,sizeof(int));
-		printf("Client recois du server : %d\n", tuileAuHasard);
+		while(1){
+
+			printf("La partie va commencer \n ");
+			sread(sockfd,&tuileAuHasard,sizeof(int));
+			printf("Client recois du server : %d\n", tuileAuHasard);
+			int emplacement = 2;
+			printf("Le client choisi de poser sa tuile à %d \n" , emplacement);
+			swrite(sockfd,&emplacement,sizeof(int));
+			
+		}
+	
 
 		//création de la grille
 		/*sread(pipefd[0], &tuile, sizeof(tuile));
