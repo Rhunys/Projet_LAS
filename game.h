@@ -10,6 +10,7 @@
 #include "message.h"
 #include "utils_v1.h"
 
+void initializeSacTuiles();
 /**
  * PRE:  tabPlayers: a valid array of players
  *       nbPlayers: the number of players

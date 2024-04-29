@@ -189,30 +189,42 @@ int main(int argc, char **argv){
 			fds[i].events = POLLIN;
 			
 		}
+		initializeSacTuiles();
+		
+		initPlayerGrids(tabPlayers, nbPLayers);
+		
 		
 		while (1) {
-
-			int j = 0;
-			int tuileAuHasard = 20;
-			spoll(fds, nbPLayers, 1);
-			printf("on pass ici\n");
-
-			// Envoi de la tuile aléatoire à chaque processus enfant
-			for (j = 0; j < nbPLayers; j++) {
-				swrite(tabServerChild[j].pipe[1], &tuileAuHasard, sizeof(tuileAuHasard));
-			}
-
-			// Lecture de l'emplacement de chaque processus enfant
-			for (j = 0; j < nbPLayers; j++) {
+			for (int i = 0; i < 20; i++){
 				
-				if(fds[j].revents & POLLIN){
-					int placement;
-					sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
-					printf("le client place la tuile à l'emplacement %d\n", placement);
+				int j;
+				
+				int tuile = tuileAuHasard();
+				spoll(fds, nbPLayers, 1);
+				printf("on pass ici\n");
+
+				// Envoi de la tuile aléatoire à chaque processus enfant
+				for (j = 0; j < nbPLayers; j++) {
+					swrite(tabServerChild[j].pipe[1], &tuile, sizeof(tuile));
+				}
+
+				// Lecture de l'emplacement de chaque processus enfant
+				for (j = 0; j < nbPLayers; j++) {
+					
+					if(fds[j].revents & POLLIN){
+						int placement;
+						sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
+						placerTuile(placement, tuile, tabPlayers[j].grid);
+						printf("le client place la tuile à l'emplacement %d\n", placement);
+					}
 				}
 			}
 			
 		}
+		printf("\nFin du jeu\n");
+		calculerScores(tabPlayers, nbPLayers);
+		afficherScores(tabPlayers, nbPLayers);
+		freePlayerGrids(tabPlayers, nbPLayers);
 
 	}
 	

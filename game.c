@@ -26,6 +26,18 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+// Game loop
+/*int main(int argc, char *argv[])
+{
+    initializeSacTuiles();
+    Player player1;
+    player1.grid = initGrid();
+    Player player2;
+    player2.grid = initGrid();
+    Player tabPlayers[2] = {player1, player2};
+    gameLoop(tabPlayers, 2);
+    return 0;
+}*/
 void gameLoop(Player *tabPlayers, int nbPlayers)
 {
     initPlayerGrids(tabPlayers, nbPlayers);
