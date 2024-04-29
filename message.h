@@ -17,4 +17,13 @@ typedef struct
   char messageText[MAX_PSEUDO];
   int code;
 } StructMessage;
+
+/* struct player used in the game */
+typedef struct{
+	char pseudo[MAX_PSEUDO];
+	int sockfd;
+  int* grid;
+  int score;
+} Player;
+
 #endif

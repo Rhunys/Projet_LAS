@@ -1,11 +1,37 @@
-#ifndef _UTILS_H_
-#define _UTILS_H_
+#ifndef _GAME_H
+#define _GAME_H
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <signal.h>
 #include <sys/ipc.h>
 #include <poll.h>
+
+#include "message.h"
+#include "utils_v1.h"
+
+/**
+ * PRE:  tabPlayers: a valid array of players
+ *       nbPlayers: the number of players
+ * POST: initializes the player grids
+ */
+int* initGrid();
+
+/**
+ * PRE:  tabPlayers: a valid array of players
+ *       nbPlayers: the number of players
+ * POST: initializes the player grids
+ */
+void initPlayerGrids(Player *tabPlayers, int nbPlayers);
+
+/**
+ * Frees the memory allocated for the player grids.
+ * 
+ * PRE: tabPlayers   A pointer to an array of players.
+ * POST: nbPlayers   The number of players.
+ * 
+ */
+void freePlayerGrids(Player *tabPlayers, int nbPlayers);
 
 /**
  * RES: A pseudo-random integer value 
@@ -14,19 +40,13 @@
 int tuileAuHasard();
 
 /**
- * RES: A pointer to an array of integers of size GRID_LENGTH
- * initialized with 0
- */
-int* initGrid();
-
-/**
  * PRE:  position: a valid position in the grid
  *       tuile: a valid tile
  *       grid: a valid grid
  * POST: places the tile at the given position in the grid
- * RES:  the updated grid
+ * RES:  true if a tile has been placed, false otherwise
  */
-int* placerTuile(int position, int tuile, int *grid);
+bool placerTuile(int position, int tuile, int *grid);
 
 /**
  * PRE:  tabPlayers: a valid array of players
@@ -35,3 +55,18 @@ int* placerTuile(int position, int tuile, int *grid);
  */
 void gameLoop(Player *tabPlayers, int nbPlayers);
 
+/**
+ * PRE:  tabPlayers: a valid array of players
+ *       nbPlayers: the number of players
+ * POST: calculates the scores of the players
+ */
+void calculerScores(Player *tabPlayers, int nbPlayers);
+
+/**
+ * PRE:  tabPlayers: a valid array of players
+ *       nbPlayers: the number of players
+ * POST: displays the scores of the players
+ */
+void afficherScores(Player *tabPlayers, int nbPlayers);
+
+#endif //_GAME_H

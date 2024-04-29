@@ -15,12 +15,6 @@
 #define KEY 123
 #define TAILLE 80
 
-typedef struct Player{
-	char pseudo[MAX_PSEUDO];
-	int sockfd;
-	int shot;
-} Player;
-
 /*** globals variables ***/
 Player tabPlayers[MAX_PLAYERS];
 volatile sig_atomic_t end_inscriptions = 0;
