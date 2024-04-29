@@ -22,6 +22,13 @@ int* initGrid();
  *       nbPlayers: the number of players
  * POST: initializes the player grids
  */
+void initializeSacTuiles();
+
+/**
+ * PRE:  tabPlayers: a valid array of players
+ *       nbPlayers: the number of players
+ * POST: initializes the player grids
+ */
 void initPlayerGrids(Player *tabPlayers, int nbPlayers);
 
 /**
@@ -83,4 +90,9 @@ char* afficherClassement(Player *tabPlayers, int nbPlayers);
  * RES:  a positive value if a > b, a negative value if a < b, 0 otherwise
  */
 int comparePlayers(const void *a, const void *b);
+
+int *sacTuiles;
+int tuilesRestantes;
+int pointsSerie[20] = {0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300};
+
 #endif //_GAME_H

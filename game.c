@@ -16,46 +16,22 @@
 #define TILES_MIN 1
 #define TILES_MAX 31
 
-int *sacTuiles;
-int tuilesRestantes;
-int pointsSerie[20] = {0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300};
-
-// Initialize the bag of tiles
-void initializeSacTuiles()
-{
-    sacTuiles = malloc(TILES_MAX * sizeof(int));
-    tuilesRestantes = TILES_MAX;
-
-    // Fill the bag with 1 except index 10 to 18 with 2
-    for (int i = 0; i < TILES_MAX; i++)
-    {
-        if (i >= 10 && i <= 18)
-        {
-            sacTuiles[i] = 2;
-        }
-        else
-        {
-            sacTuiles[i] = 1;
-        }
-    }
-}
-
 // Game loop
 int main(int argc, char *argv[])
 {
-    initializeSacTuiles();
-    Player player1;
-    player1.grid = initGrid();
-    Player player2;
-    player2.grid = initGrid();
+    Player player1 = {"Joueur 1", 0, NULL, 0};
+    Player player2 = {"Joueur 2", 0, NULL, 0};
     Player tabPlayers[2] = {player1, player2};
     gameLoop(tabPlayers, 2);
     return 0;
 }
+
 void gameLoop(Player *tabPlayers, int nbPlayers)
 {
     initPlayerGrids(tabPlayers, nbPlayers);
+    initializeSacTuiles();
     
+    /*
     for (int i = 0; i < TURNS; i++)
     {   
         int tuile = tuileAuHasard();
@@ -84,6 +60,7 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
             int position;
             printf("Entrez la position où placer la tuile : ");
             scanf("%d", &position);
+
             while(!placerTuile(position, tuile, player.grid)){
                 printf("Entrez la position où placer la tuile : ");
                 scanf("%d", &position);
@@ -95,9 +72,9 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
             }
             printf("\n");
         }
-        
     }
-   
+    */
+    
     printf("\nFin du jeu\n");
     calculerScores(tabPlayers, nbPlayers);
     afficherScores(tabPlayers, nbPlayers);
@@ -108,9 +85,29 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
     freePlayerGrids(tabPlayers, nbPlayers);
 }
 
+// Initialize the bag of tiles
+void initializeSacTuiles()
+{
+    sacTuiles = malloc(TILES_MAX * sizeof(int));
+    tuilesRestantes = TILES_MAX;
+
+    // Fill the bag with 1 except index 10 to 18 with 2
+    for (int i = 0; i < TILES_MAX; i++)
+    {
+        if (i >= 10 && i <= 18)
+        {
+            sacTuiles[i] = 2;
+        }
+        else
+        {
+            sacTuiles[i] = 1;
+        }
+    }
+}
+
 int *initGrid()
 {
-    int *grid = (int *)malloc(GRID_LENGTH * sizeof(int));
+    int *grid = malloc(GRID_LENGTH * sizeof(int));
 
     for (int i = 0; i < GRID_LENGTH; i++)
     {
@@ -168,7 +165,7 @@ bool placerTuile(int position, int tuile, int *grid)
     }
 
     for (int i = position-1; i < GRID_LENGTH; i++)
-    {
+    {   
         if (grid[i] == 0)
         {
             grid[i] = tuile;
@@ -176,9 +173,10 @@ bool placerTuile(int position, int tuile, int *grid)
             return true;
         }
 
-        if (i == GRID_LENGTH)
+        if (i == GRID_LENGTH-1)
         {
-            i = 0;
+            printf("Loop\n");
+            i = -1;
         }
     }
     return true;
@@ -192,10 +190,12 @@ void calculerScores(Player *tabPlayers, int nbPlayers)
         Player player = tabPlayers[i];
         player.score = 0;
         int serie = 1;
-        for (int j = 1; j < GRID_LENGTH; j++)
+        for (int j = 0; j < GRID_LENGTH-1; j++)
         {   
-            if (player.grid[j] >= player.grid[j - 1])
+            if (player.grid[j] < player.grid[j + 1])
             {
+                serie++;
+            } else if(player.grid[j] == 31){
                 serie++;
             } else {
                 player.score += pointsSerie[serie-1];
