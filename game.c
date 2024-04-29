@@ -16,7 +16,6 @@
 #define TILES_MIN 1
 #define TILES_MAX 31
 
-
 int *sacTuiles;
 int tuilesRestantes;
 int pointsSerie[20] = {0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300};
@@ -68,7 +67,7 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
             nbPlayersAlreadyPlayed++;
 
             if(tuile == 31){
-                printf("\nTuile à placer : Jo\n");
+                printf("\nTuile à placer : Joker\n");
             } else {
                 printf("\nTuile à placer : %d\n", tuile);
             }
@@ -102,6 +101,9 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
     printf("\nFin du jeu\n");
     calculerScores(tabPlayers, nbPlayers);
     afficherScores(tabPlayers, nbPlayers);
+
+    char *classement = afficherClassement(tabPlayers, nbPlayers);
+    printf("%s\n", classement);
 
     freePlayerGrids(tabPlayers, nbPlayers);
 }
@@ -182,8 +184,6 @@ bool placerTuile(int position, int tuile, int *grid)
     return true;
 }
 
-
-
 void calculerScores(Player *tabPlayers, int nbPlayers)
 {   
     printf("\nCalcul des scores\n");
@@ -213,4 +213,29 @@ void afficherScores(Player *tabPlayers, int nbPlayers)
     {
         printf("\nScore du joueur %d : %d\n", i+1, tabPlayers[i].score);
     }
+}
+
+char* afficherClassement(Player *tabPlayers, int nbPlayers)
+{
+    Player *tabPlayersCopy = malloc(nbPlayers * sizeof(Player));
+    memcpy(tabPlayersCopy, tabPlayers, nbPlayers * sizeof(Player));
+    qsort(tabPlayersCopy, nbPlayers, sizeof(Player), comparePlayers);
+    char *classement = malloc(100 * sizeof(char));
+    strcpy(classement, "Classement :\n");
+    for (int i = 0; i < nbPlayers; i++)
+    {
+        char *playerScore = malloc(100 * sizeof(char));
+        sprintf(playerScore, "Joueur %d : %d\n", i+1, tabPlayersCopy[i].score);
+        strcat(classement, playerScore);
+        free(playerScore);
+    }
+    free(tabPlayersCopy);
+    return classement;
+}
+
+int comparePlayers(const void *a, const void *b)
+{
+    Player *playerA = (Player *)a;
+    Player *playerB = (Player *)b;
+    return playerB->score - playerA->score;
 }

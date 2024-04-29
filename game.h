@@ -69,4 +69,18 @@ void calculerScores(Player *tabPlayers, int nbPlayers);
  */
 void afficherScores(Player *tabPlayers, int nbPlayers);
 
+/**
+ * PRE:  tabPlayers: a valid array of players
+ *       nbPlayers: the number of players
+ * POST: displays the scores of the players
+ */
+char* afficherClassement(Player *tabPlayers, int nbPlayers);
+
+/**
+ * PRE:  a: a pointer to a player
+ *       b: a pointer to a player
+ * POST: compares the scores of two players
+ * RES:  a positive value if a > b, a negative value if a < b, 0 otherwise
+ */
+int comparePlayers(const void *a, const void *b);
 #endif //_GAME_H
