@@ -7,6 +7,7 @@
 
 #include "message.h"
 #include "utils_v1.h"
+#include "game.h"
 
 #define MAX_PLAYERS 2
 #define BACKLOG 5
@@ -16,11 +17,11 @@
 #define TAILLE 80
 
 
-typedef struct Player{
+/*typedef struct Player{
 	char pseudo[MAX_PSEUDO];
 	int sockfd;
 	int shot;
-} Player;
+} Player;*/
 
 typedef struct ServerChild{
 	int pipe[2];

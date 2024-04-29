@@ -10,6 +10,7 @@
 
 #include "message.h"
 #include "utils_v1.h"
+#include "game.h"
 
 /**
  * PRE: serverIP : a valid IP address
@@ -71,33 +72,42 @@ int main(int argc, char **argv){
 	sread(sockfd, &msg, sizeof(msg));
 	
 	if (msg.code == START_GAME){
-		
-	while (1) {
-		printf("La partie va commencer \n ");
-		
-		// Lire la tuile du serveur
-		if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
-			perror("Erreur de lecture du serveur");
-			break; // Sortir de la boucle infinie
-		}
+		int *grid;
+		grid = initGrid(); // sert uniquement pour des tests
+		int emplacement;
+	    char buffer[10]; // Taille suffisante pour stocker une entrée d'entier
+	    while(1){ 
+			printf("La partie va commencer \n ");
+			
+			// Lire la tuile du serveur
+			if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
+				perror("Erreur de lecture du serveur");
+				break; // Sortir de la boucle infinie
+			}
 
-		printf("Client reçoit du serveur : %d\n", tuileAuHasard);
+			printf("Client reçoit du serveur : %d\n", tuileAuHasard);
 
-		int emplacement = 2;
-		printf("Le client choisit de poser sa tuile à %d \n", emplacement);
+			printf("voici votre grille : \n");
+			for (int i = 0; i < 20; i++)
+			{
+				printf("%d",grid[i]);
+			}
+			printf("\n"); //sert uniquement pour des test
+			
+			
 
-		// Envoyer l'emplacement au serveur
-		if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
-			perror("Erreur d'écriture vers le serveur");
-			break; // Sortir de la boucle infinie
+			printf("Où souhaitez vous placer a tuile ?\n");
+
+			sread(0,buffer, sizeof(buffer)); //lecture de l'emplacement au clavier
+			emplacement = atoi(buffer); // Convertit la chaîne de caractères en entier
+
+			printf("Le client choisit de poser sa tuile à %d \n", emplacement);
+
+			// Envoyer l'emplacement au serveur
+			if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
+				perror("Erreur d'écriture vers le serveur");
+				break; // Sortir de la boucle infinie
+			}
 		}
 	}
-
-		
-
-
-	
-	}
-	
-	
 }
