@@ -10,6 +10,7 @@
 
 #include "message.h"
 #include "utils_v1.h"
+#include "game.h"
 
 /**
  * PRE: serverIP : a valid IP address
@@ -71,6 +72,8 @@ int main(int argc, char **argv){
 	sread(sockfd, &msg, sizeof(msg));
 	
 	if (msg.code == START_GAME){
+		int *grid;
+		grid = initGrid(); // sert uniquement pour des tests
 		int emplacement;
 	    char buffer[10]; // Taille suffisante pour stocker une entrée d'entier
 	    while(1){ 
@@ -83,6 +86,14 @@ int main(int argc, char **argv){
 			}
 
 			printf("Client reçoit du serveur : %d\n", tuileAuHasard);
+
+			printf("voici votre grille : \n");
+			for (int i = 0; i < 20; i++)
+			{
+				printf("%d",grid[i]);
+			}
+			printf("\n"); //sert uniquement pour des test
+			
 			
 
 			printf("Où souhaitez vous placer a tuile ?\n");
