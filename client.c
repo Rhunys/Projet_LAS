@@ -73,7 +73,7 @@ int main(int argc, char **argv){
 	spipe(pipefd); 
 
 	//int tuile;
-	
+	int placement;
 	if (msg.code == START_GAME){
 		
 	while (1) {
