@@ -10,13 +10,28 @@
 
 #define MAX_PLAYERS 2
 #define BACKLOG 5
-#define TIME_INSCRIPTION 30
+#define TIME_INSCRIPTION 20
 #define PERM 0666 
 #define KEY 123
 #define TAILLE 80
 
+
+typedef struct Player{
+	char pseudo[MAX_PSEUDO];
+	int sockfd;
+	int shot;
+} Player;
+
+typedef struct ServerChild{
+	int pipe[2];
+	int pipe2[2];
+	int sockfd;
+}ServerChild;
+
 /*** globals variables ***/
 Player tabPlayers[MAX_PLAYERS];
+ServerChild tabServerChild[MAX_PLAYERS];
+
 volatile sig_atomic_t end_inscriptions = 0;
 
 void endServerHandler(int sig){
@@ -50,10 +65,40 @@ int initSocketServer(int port){
 	return sockfd;
 }
 
+void run(void * argv, void * argv2, void * argv3){
+	int *pipefd = argv;
+	int *pipefd2 = argv2;
+	int sockfd = *(int *)argv3;
+			 
+	int tuileAuHasard; 
+	sclose(pipefd[1]);
+	sclose(pipefd2[0]);
+
+	while(1){
+	sread(pipefd[0], &tuileAuHasard, sizeof(int));
+	printf("Valeur reçue par le parent : %d\n", tuileAuHasard);
+
+
+	swrite(sockfd,&tuileAuHasard,sizeof(int));
+	printf("Serveur envoie au client : %d\n", tuileAuHasard);
+
+	int emplacement; 
+
+	sread(sockfd,&emplacement,sizeof(int));
+	printf("Le client a décide de placer sa tuile en %d \n", emplacement);
+
+
+	swrite(pipefd2[1],&emplacement,sizeof(int));
+	printf("envoie de l'emplacement au server \n");
+	}
+	
+
+}
+
 int main(int argc, char **argv){
 	int sockfd, newsockfd, i;
 	StructMessage msg;
-	//struct pollfd fds[MAX_PLAYERS];
+	struct pollfd fds[MAX_PLAYERS];
 	// char winnerName[256];
 	
 	ssigaction(SIGALRM, endServerHandler);
@@ -124,42 +169,48 @@ int main(int argc, char **argv){
 	if(msg.code == START_GAME){
 		printf("La partie va commencer \n");
 
-		// 1/ Création du Pipe 
-		int pipefd[2];
-		spipe(pipefd); 
-
-		// Creation des serveurs fils 
-		int childId = sfork();
-
-		
-
 		// filedes[0] -> lire le pipe
 		// filedes[1] -> écrire sur pipe
 
-		if(childId > 0){
+		for(int i = 0 ; i < nbPLayers; i ++){
+			printf("Création du server fils numéro : %d \n " , i);
 
-			sclose(pipefd[0]);
+			// 1/ Création du Pipe 
+			spipe(tabServerChild[i].pipe);
+			spipe(tabServerChild[i].pipe2);
 
-			int tuileAuHasard = 20; 
+			fork_and_run3(run, tabServerChild[i].pipe, tabServerChild[i].pipe2,&tabPlayers[i].sockfd);
 
-			nwrite(pipefd[1], &tuileAuHasard, sizeof(tuileAuHasard));
+			sclose(tabServerChild[i].pipe[0]);
+			sclose(tabServerChild[i].pipe2[1]);
 
-			sclose(pipefd[1]);
-
-
+			fds[i].fd = tabServerChild[i].pipe2[0];
+			fds[i].events = POLLIN;
+			
 		}
-		else{
+		
+		while (1) {
 
-			sclose(pipefd[1]);
-			 
-			int tuileAuHasard; 
+			int j = 0;
+			int tuileAuHasard = 20;
+			spoll(fds, nbPLayers, 1);
+			printf("on pass ici\n");
 
-			sread(pipefd[0], &tuileAuHasard, sizeof(tuileAuHasard));
-			printf("Valeur reçue par l'enfant : %d\n", tuileAuHasard);
+			// Envoi de la tuile aléatoire à chaque processus enfant
+			for (j = 0; j < nbPLayers; j++) {
+				swrite(tabServerChild[j].pipe[1], &tuileAuHasard, sizeof(tuileAuHasard));
+			}
 
-			sclose(pipefd[0]);
-
-
+			// Lecture de l'emplacement de chaque processus enfant
+			for (j = 0; j < nbPLayers; j++) {
+				
+				if(fds[j].revents & POLLIN){
+					int placement;
+					sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
+					printf("le client place la tuile à l'emplacement %d\n", placement);
+				}
+			}
+			
 		}
 
 	}
