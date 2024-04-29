@@ -76,16 +76,26 @@ int main(int argc, char **argv){
 	
 	if (msg.code == START_GAME){
 		
-		while(1){
-
-			printf("La partie va commencer \n ");
-			sread(sockfd,&tuileAuHasard,sizeof(int));
-			printf("Client recois du server : %d\n", tuileAuHasard);
-			int emplacement = 2;
-			printf("Le client choisi de poser sa tuile à %d \n" , emplacement);
-			swrite(sockfd,&emplacement,sizeof(int));
-			
+	while (1) {
+		printf("La partie va commencer \n ");
+		
+		// Lire la tuile du serveur
+		if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
+			perror("Erreur de lecture du serveur");
+			break; // Sortir de la boucle infinie
 		}
+
+		printf("Client reçoit du serveur : %d\n", tuileAuHasard);
+
+		int emplacement = 2;
+		printf("Le client choisit de poser sa tuile à %d \n", emplacement);
+
+		// Envoyer l'emplacement au serveur
+		if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
+			perror("Erreur d'écriture vers le serveur");
+			break; // Sortir de la boucle infinie
+		}
+	}
 	
 
 		//création de la grille
