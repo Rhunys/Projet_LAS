@@ -16,34 +16,13 @@
 #define TILES_MIN 1
 #define TILES_MAX 31
 
-// Game loop
-int main(int argc, char *argv[])
-{
-    Player player1 = {"Joueur 1", 0, NULL, 0};
-    Player player2 = {"Joueur 2", 0, NULL, 0};
-    Player tabPlayers[2] = {player1, player2};
-    gameLoop(tabPlayers, 2);
-    return 0;
-}
+int pointsSerie[20] = {0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300};
 
-// Game loop
-/*int main(int argc, char *argv[])
-{
-    initializeSacTuiles();
-    Player player1;
-    player1.grid = initGrid();
-    Player player2;
-    player2.grid = initGrid();
-    Player tabPlayers[2] = {player1, player2};
-    gameLoop(tabPlayers, 2);
-    return 0;
-}*/
 void gameLoop(Player *tabPlayers, int nbPlayers)
 {
     initPlayerGrids(tabPlayers, nbPlayers);
     initializeSacTuiles();
     
-    /*
     for (int i = 0; i < TURNS; i++)
     {   
         int tuile = tuileAuHasard();
@@ -85,7 +64,6 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
             printf("\n");
         }
     }
-    */
     
     printf("\nFin du jeu\n");
     calculerScores(tabPlayers, nbPlayers);
@@ -102,7 +80,6 @@ void initializeSacTuiles()
 {
     sacTuiles = malloc(TILES_MAX * sizeof(int));
     tuilesRestantes = TILES_MAX;
-
     // Fill the bag with 1 except index 10 to 18 with 2
     for (int i = 0; i < TILES_MAX; i++)
     {

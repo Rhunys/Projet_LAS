@@ -94,6 +94,5 @@ int comparePlayers(const void *a, const void *b);
 
 int *sacTuiles;
 int tuilesRestantes;
-int pointsSerie[20] = {0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300};
 
 #endif //_GAME_H

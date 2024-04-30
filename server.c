@@ -34,9 +34,14 @@ Player tabPlayers[MAX_PLAYERS];
 ServerChild tabServerChild[MAX_PLAYERS];
 
 volatile sig_atomic_t end_inscriptions = 0;
+volatile sig_atomic_t end_game = 0;
 
 void endServerHandler(int sig){
 	end_inscriptions = 1;
+}
+
+void endGameHandler(int sig){
+		end_game = 1;
 }
 
 void disconnect_players(Player *tabPlayers, int nbPlayers){
@@ -70,7 +75,7 @@ void run(void * argv, void * argv2, void * argv3){
 	int *pipefd = argv;
 	int *pipefd2 = argv2;
 	int sockfd = *(int *)argv3;
-			 
+
 	int tuileAuHasard; 
 	sclose(pipefd[1]);
 	sclose(pipefd2[0]);
@@ -78,7 +83,6 @@ void run(void * argv, void * argv2, void * argv3){
 	while(1){
 	sread(pipefd[0], &tuileAuHasard, sizeof(int));
 	printf("Valeur reçue par le parent : %d\n", tuileAuHasard);
-
 
 	swrite(sockfd,&tuileAuHasard,sizeof(int));
 	printf("Serveur envoie au client : %d\n", tuileAuHasard);
@@ -92,8 +96,6 @@ void run(void * argv, void * argv2, void * argv3){
 	swrite(pipefd2[1],&emplacement,sizeof(int));
 	printf("envoie de l'emplacement au server \n");
 	}
-	
-
 }
 
 int main(int argc, char **argv){
@@ -102,7 +104,8 @@ int main(int argc, char **argv){
 	struct pollfd fds[MAX_PLAYERS];
 	// char winnerName[256];
 	
-	ssigaction(SIGALRM, endServerHandler);
+	// Armement de l'alarme
+	ssigaction(SIGINT, endGameHandler);
 
 	sockfd = initSocketServer(SERVER_PORT);
 	printf("Le serveur tourne sur le port : %i \n", SERVER_PORT);
@@ -193,15 +196,14 @@ int main(int argc, char **argv){
 		
 		initPlayerGrids(tabPlayers, nbPLayers);
 		
-		
-		while (1) {
+		while (!end_game) {
 			for (int i = 0; i < 20; i++){
 				
 				int j;
 				
 				int tuile = tuileAuHasard();
 				spoll(fds, nbPLayers, 1);
-				printf("on pass ici\n");
+				printf("On passe ici\n");
 
 				// Envoi de la tuile aléatoire à chaque processus enfant
 				for (j = 0; j < nbPLayers; j++) {
@@ -215,7 +217,7 @@ int main(int argc, char **argv){
 						int placement;
 						sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
 						placerTuile(placement, tuile, tabPlayers[j].grid);
-						printf("le client place la tuile à l'emplacement %d\n", placement);
+						printf("Le client place la tuile à l'emplacement %d\n", placement);
 					}
 				}
 			}
@@ -226,7 +228,9 @@ int main(int argc, char **argv){
 		afficherScores(tabPlayers, nbPLayers);
 		freePlayerGrids(tabPlayers, nbPLayers);
 
+		disconnect_players(tabPlayers, nbPLayers);
+		sclose(sockfd);
+		exit(0);
 	}
-	
 }
 	
