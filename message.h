@@ -14,6 +14,7 @@
 #define START_SCORE 15
 #define END_GAME 16
 
+
 /* struct message used between server and client */
 typedef struct
 {

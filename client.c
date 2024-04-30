@@ -84,7 +84,6 @@ int main(int argc, char **argv){
 		int emplacement;
 	    char buffer[10]; // Taille suffisante pour stocker une entrée d'entier
 		printf("La partie va commencer \n\n ");
-		int nbJoueurs= 0;
 
 			
 		while (1) {
@@ -122,39 +121,39 @@ int main(int argc, char **argv){
 
 				// Envoyer l'emplacement au serveur
 				if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
-					perror("Erreur d'écriture vers le serveur");
+					perror("Erreur d'écriture vers le serveur\n");
 					break; // Sortir de la boucle infinie
 				}
 			}
 
 
-			// Tant que les deux joueurs n'ont pas recu leurs score 
+		
 
-			
-
-			printf("envoie du score au server fils qu est de 10 ");
+			printf("envoie du score au server fils qu est de 10 \n");
 			int score = 10; 
 			swrite(sockfd,&score,sizeof(int));
 
-			int size;   
-			sread(sockfd,&size,sizeof(size));
-					
-			TabPlayer * players =  malloc (size * sizeof(TabPlayer));
-			if(!players){
-				perror("ALLOCATION ERROR");
-				exit(1);
+			// Récupération de la taille 
+			int size;
+			sread(sockfd, &size, sizeof(int));
+
+			// Allouer de la mémoire pour le tableau
+			TabPlayer* newplayer = smalloc(size * sizeof(TabPlayer));
+
+			// Recevoir le tableau
+			for(int i = 0; i < size; i++) {
+    			sread(sockfd, &(newplayer[i]), sizeof(TabPlayer));
+				printf("score dans tabplayer : %d \n " , newplayer->tabPlayer->score);
 			}
 
-			TabPlayer* newplayer;
-			for (int i = 0; i < size; ++i){
-			sread(sockfd,&newplayer,sizeof(TabPlayer));
-			strcpy(players->tabPlayer->pseudo,newplayer->tabPlayer->pseudo);
-			players->tabPlayer->score = newplayer->tabPlayer->score;
-			}
-			afficherScores(newplayer->tabPlayer,nbJoueurs);
+			afficherScores(newplayer->tabPlayer,size);
+			
+
+			
 		
 		
 		}
+		
 		
 	}
 

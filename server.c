@@ -77,7 +77,7 @@ void run(void *argv, void *argv2, void *argv3)
 	int tuileAuHasard;
 	sclose(pipefd[1]);
 	sclose(pipefd2[0]);
-	int nbJoueurs = 0;
+	
 
 
 	while (!end_game)
@@ -100,35 +100,30 @@ void run(void *argv, void *argv2, void *argv3)
 
 		}
 		printf("Partie finie  \n");
-		sread(pipefd[0],&nbJoueurs,sizeof(int));
 
 		// Récupération du total 
 		int score;
 		sread(sockfd,&score,sizeof(int));
 
-		// envoie du nombre de joeuru a l'enfant 
-		swrite(sockfd,&nbJoueurs,sizeof(int));
-
 		// envoie du score au parent 
 		swrite(pipefd2[1],&score,sizeof(int));
 
 		int semID = getSemaphore();
-		sem_down0(semID);
+		
+		// Envoyer la taille du tableau avant d'envoyer le tableau lui-même
+		int size = MAX_PLAYERS;
+		swrite(sockfd, &size, sizeof(int));
 
 		// Récupération de la mémoire partagée 
 		TabPlayer * tabRankingSM = getSharedMemory();
-		TabPlayer* tabRanking = malloc (nbJoueurs * sizeof(TabPlayer));
-
-		if(!tabRanking){
-			perror("ALLOCATION ERROR");
-			exit(1);
-		}
+		//TabPlayer* tabRanking = smalloc (MAX_PLAYERS * sizeof(TabPlayer));
 			
-		for(int i=0 ; i<nbJoueurs ; i++){
-			strcpy(tabRanking->tabPlayer->pseudo, tabRankingSM->tabPlayer->pseudo);
-			tabRanking->tabPlayer->score= tabRankingSM->tabPlayer->score;
-			swrite(sockfd,&tabRanking->tabPlayer,sizeof(TabPlayer)); 
+		// Envoyer le tableau
+		for(int i = 0; i < MAX_PLAYERS; i++) {
+    		swrite(sockfd, &(tabRankingSM->tabPlayer[i]), sizeof(TabPlayer));
 		}
+
+		sem_down0(semID);
 	}
 
 }
@@ -260,7 +255,6 @@ int main(int argc, char **argv)
 			}
 
 			spoll(fds, nbPLayers, 1);
-			printf("On passe ici\n");
 
 			// Envoi de la tuile aléatoire à chaque processus enfant
 			for (j = 0; j < nbPLayers; j++) {
@@ -284,26 +278,19 @@ int main(int argc, char **argv)
 		}
 		}
 	}
-		// Envoie du nombre de joueurs 
-		for (int i = 0; i < nbPLayers; i++){
-			swrite(tabServerChild[i].pipe[1],&nbPLayers, sizeof(msg));		
-		}
-
-		// Récupération du code start score 
-		for (int i = 0; i < nbPLayers; i++){
-			sread(tabServerChild[i].pipe2[0],&msg, sizeof(msg));		
-		}
 		
-		printf("PARTIE FINIE");
+		printf("PARTIE FINIE \n");
 
 
-		sem_down0(semId);
+		//sem_down0(semId);
 
 		int score;
 		// Lecture des score 
 		for (int i = 0; i < nbPLayers; i++){
 			sread(tabServerChild[i].pipe2[0], &score, sizeof(int));	
-			calculerScores(tabPlayers,nbPLayers);
+			tabPlayers[i].score = score;
+			//calculerScores(tabPlayers,nbPLayers);
+			printf("%d \n" , score);
 		}
 			
 		afficherClassement(tabPlayers,nbPLayers);
