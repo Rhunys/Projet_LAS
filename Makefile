@@ -6,9 +6,10 @@ ALL= server client game
 
 all: $(ALL)
 
-server : server.o utils_v1.o
-	$(CC) $(CCFLAGS) -o server server.o utils_v1.o
-server.o: server.c message.h
+server : server.o utils_v1.o ipc.o
+	$(CC) $(CCFLAGS) -o server server.o utils_v1.o ipc.o
+
+server.o: server.c message.h ipc.h
 	$(CC) $(CCFLAGS) -c server.c
 
 client : client.o utils_v1.o
@@ -21,6 +22,12 @@ game : game.o utils_v1.o
 
 game.o: game.c message.h utils_v1.h
 	$(CC) $(CCFLAGS) -c game.c 
+
+ipc : ipc.o utils_v1.o 
+	$(CC) $(CCFLAGS) -o ipc ipc.o utils_v1.o 
+
+ipc.o: ipc.c message.h utils_v1.h
+	$(CC) $(CCFLAGS) -c ipc.c 
 
 utils_v1.o: utils_v1.c utils_v1.h
 	$(CC) $(CCFLAGS) -c utils_v1.c

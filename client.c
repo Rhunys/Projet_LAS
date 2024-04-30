@@ -71,33 +71,66 @@ int main(int argc, char **argv){
 	sread(sockfd, &msg, sizeof(msg));
 	
 	if (msg.code == START_GAME){
+		int nbJoueurs= 0;
+		int joueurRanking = 0; 
+			
+		while (nbJoueurs < 2) {
+			printf("La partie va commencer \n ");
+			
+			// Lire la tuile du serveur
+			if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
+				perror("Erreur de lecture du serveur");
+				break; 
+			}
+
+			printf("Client reçoit du serveur : %d\n", tuileAuHasard);
+
+			int emplacement = 2;
+			printf("Le client choisit de poser sa tuile à %d \n", emplacement);
+
+			// Envoyer l'emplacement au serveur
+			if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
+				perror("Erreur d'écriture vers le serveur");
+				break; 
+			}
+			nbJoueurs++;
+		}
+		while(joueurRanking < 2){ // Tant que les deux joueurs n'ont pas recu leurs score 
+
+			printf("envoie du code start score");
+			msg.code = START_SCORE;
+			swrite(sockfd, &msg, sizeof(msg));
+			printf("message.code ; attentdu : MONSCORE : %d\n ", msg.code);
+
+			printf("envoie du score au server fils qu est de 10 ");
+			int score = 10; 
+			swrite(sockfd,&score,sizeof(int));
+
+			int size;   
+			sread(sockfd,&size,sizeof(size));
+					
+			TabPlayer * players =  malloc (size * sizeof(TabPlayer));
+			if(!players){
+				perror("ALLOCATION ERROR");
+				exit(1);
+			}
+
+			for (int i = 0; i < size; ++i){
+			TabPlayer* newplayer;
+			sread(sockfd,&newplayer,sizeof(TabPlayer));
+			strcpy(players->tabPlayer->pseudo,newplayer->tabPlayer->pseudo);
+			players->tabPlayer->score = newplayer->tabPlayer->score;
+			}
+			//   printRanking(players,size); **** AFFICHER RANKING METHODE GAME.C *****
 		
-	while (1) {
-		printf("La partie va commencer \n ");
-		
-		// Lire la tuile du serveur
-		if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
-			perror("Erreur de lecture du serveur");
-			break; // Sortir de la boucle infinie
 		}
 
-		printf("Client reçoit du serveur : %d\n", tuileAuHasard);
+		
 
-		int emplacement = 2;
-		printf("Le client choisit de poser sa tuile à %d \n", emplacement);
-
-		// Envoyer l'emplacement au serveur
-		if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
-			perror("Erreur d'écriture vers le serveur");
-			break; // Sortir de la boucle infinie
-		}
 	}
-
-		
-
 
 	
-	}
+
 	
 	
 }
