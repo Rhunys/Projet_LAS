@@ -16,8 +16,22 @@
 #define TILES_MIN 1
 #define TILES_MAX 31
 
+int *sacTuiles;
+int tuilesRestantes;
 int pointsSerie[20] = {0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70, 85, 100, 150, 300};
 
+// Game loop
+/*int main(int argc, char *argv[])
+{
+    initializeSacTuiles();
+    Player player1;
+    player1.grid = initGrid();
+    Player player2;
+    player2.grid = initGrid();
+    Player tabPlayers[2] = {player1, player2};
+    gameLoop(tabPlayers, 2);
+    return 0;
+}*/
 void gameLoop(Player *tabPlayers, int nbPlayers)
 {
     initPlayerGrids(tabPlayers, nbPlayers);
@@ -145,25 +159,22 @@ int tuileAuHasard()
     }
 }
 
-bool placerTuile(int position, int tuile, int *grid)
+bool placerTuile(int *position, int tuile, int *grid) 
 {
-    if (position <= 0 || position > GRID_LENGTH)
-    {
+    if (*position <= 0 || *position > GRID_LENGTH) {
         printf("\nPosition invalide ! Veuillez introduire un nombre entre 1 et 20\n");
         return false;
     }
 
-    for (int i = position-1; i < GRID_LENGTH; i++)
-    {   
-        if (grid[i] == 0)
-        {
+    for (int i = *position - 1; i < GRID_LENGTH; i++) {   
+        if (grid[i] == 0) {
             grid[i] = tuile;
             printf("Tuile placée à la position %d\n", i + 1);
+            *position = i+1; // Modifier la position
             return true;
         }
 
-        if (i == GRID_LENGTH-1)
-        {
+        if (i == GRID_LENGTH - 1) {
             printf("Loop\n");
             i = -1;
         }

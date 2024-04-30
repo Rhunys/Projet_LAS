@@ -28,6 +28,12 @@ int initSocketClient(char *serverIP, int serverPort)
 
 int main(int argc, char **argv){
 
+	if(argc < 2){
+        perror("Missing port");
+        exit(1);
+    }
+    int SERVER_PORT = atoi(argv[1]);
+
 	char pseudo[MAX_PSEUDO];
 	int sockfd;
 	int ret;
@@ -76,9 +82,10 @@ int main(int argc, char **argv){
 		grid = initGrid(); // sert uniquement pour des tests
 		int emplacement;
 	    char buffer[10]; // Taille suffisante pour stocker une entrée d'entier
+		printf("La partie va commencer \n\n ");
 
-	    while(1){ 
-			printf("La partie va commencer \n ");
+	    while(1){
+			
 			
 			// Lire la tuile du serveur
 			if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
@@ -86,15 +93,9 @@ int main(int argc, char **argv){
 				break; // Sortir de la boucle infinie
 			}
 
-			/*// Lire grid du serveur
-			if (sread(sockfd, &grid, sizeof(grid)) <= 0) {
-				perror("Erreur de lecture du serveur (grid)");
-				break; // Sortir de la boucle infinie
-			}*/
+			printf("Voici la tuile à placer : %d\n", tuileAuHasard);
 
-			printf("Client reçoit du serveur : %d\n", tuileAuHasard);
-
-			printf("voici votre grille : \n");
+			printf("\nVoici votre grille actuelle : \n");
 			for (int i = 0; i < 20; i++)
 			{
 				printf("%d ",grid[i]);
@@ -103,19 +104,17 @@ int main(int argc, char **argv){
 			
 			
 
-			printf("Où souhaitez vous placer a tuile ?\n");
+			printf("\nOù souhaitez vous placer a tuile ?\n");
 
 			sread(0,buffer, sizeof(buffer)); //lecture de l'emplacement au clavier
 			emplacement = atoi(buffer); // Convertit la chaîne de caractères en entier
 
-			while (!placerTuile(emplacement, tuileAuHasard, grid)){//vérifie l'emplacement dans la grille et place la tuile
+			while (!placerTuile(&emplacement, tuileAuHasard, grid)){//vérifie l'emplacement dans la grille et place la tuile
 				printf("Où souhaitez vous placer a tuile ?\n");
 				sread(0,buffer, sizeof(buffer));
 				emplacement = atoi(buffer); 
 			}
-			
-
-			printf("Le client choisit de poser sa tuile à %d \n", emplacement);
+			printf("----------------------------------------\n");
 
 			// Envoyer l'emplacement au serveur
 			if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
@@ -124,4 +123,6 @@ int main(int argc, char **argv){
 			}
 		}
 	}
+
+	printf("\nFin du jeu\n");
 }
