@@ -214,7 +214,7 @@ char* afficherClassement(Player *tabPlayers, int nbPlayers)
     for (int i = 0; i < nbPlayers; i++)
     {
         char *playerScore = malloc(100 * sizeof(char));
-        sprintf(playerScore, "Joueur %d : %d\n", i+1, tabPlayersCopy[i].score);
+        sprintf(playerScore, "%s : %d\n", tabPlayersCopy[i].pseudo, tabPlayersCopy[i].score);
         strcat(classement, playerScore);
         free(playerScore);
     }

@@ -4,24 +4,19 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "message.h"
 #include "utils_v1.h"
 #include "game.h"
 
 #define MAX_PLAYERS 2
+#define GRID_LENGTH 20
 #define BACKLOG 5
 #define TIME_INSCRIPTION 20
 #define PERM 0666 
 #define KEY 123
 #define TAILLE 80
-
-
-/*typedef struct Player{
-	char pseudo[MAX_PSEUDO];
-	int sockfd;
-	int shot;
-} Player;*/
 
 typedef struct ServerChild{
 	int pipe[2];
@@ -49,7 +44,6 @@ void disconnect_players(Player *tabPlayers, int nbPlayers){
 		sclose(tabPlayers[i].sockfd);
 	return;
 }
-
 
 /**
  * PRE:  serverPort: a valid port number
@@ -92,7 +86,6 @@ void run(void * argv, void * argv2, void * argv3){
 	sread(sockfd,&emplacement,sizeof(int));
 	printf("Le client a décide de placer sa tuile en %d \n", emplacement);
 
-
 	swrite(pipefd2[1],&emplacement,sizeof(int));
 	printf("envoie de l'emplacement au server \n");
 	}
@@ -102,6 +95,33 @@ int main(int argc, char **argv){
 	int sockfd, newsockfd, i;
 	StructMessage msg;
 	struct pollfd fds[MAX_PLAYERS];
+	int* tilesList = malloc(GRID_LENGTH * 3 * sizeof(int));
+	
+	if(argc < 2){
+		printf("Missing argument (port number)\n");
+		exit(1);
+	} else if(argc > 3){
+		printf("Too many arguments\n");
+		exit(1);
+	} else {
+		printf("Usage : %s <port>\n", argv[1]);
+	}
+	
+	int SERVER_PORT = atoi(argv[1]);
+
+	if(argc == 3){
+		int i = 0;
+    	int num;
+		int file = sopen(argv[2], 0, O_RDONLY);
+
+		while (i < GRID_LENGTH && read(file, &num, sizeof(int)) == sizeof(int)) {
+			tilesList[i] = num;
+			i++;
+		}
+
+		sclose(file);
+	}
+
 	// char winnerName[256];
 	
 	// Armement de l'alarme
@@ -116,7 +136,6 @@ int main(int argc, char **argv){
 
 	i = 0;
 	int nbPLayers = 0;
-
 
 	// INSCRIPTION PART
 	alarm(TIME_INSCRIPTION);
@@ -197,11 +216,16 @@ int main(int argc, char **argv){
 		initPlayerGrids(tabPlayers, nbPLayers);
 		
 		while (!end_game) {
-			for (int i = 0; i < 20; i++){
-				
+			for (int i = 0; i < GRID_LENGTH; i++){
 				int j;
 				
-				int tuile = tuileAuHasard();
+				int tuile;
+				if(tilesList[0] == 0){
+					tuile = tuileAuHasard();
+				} else {
+					tuile = tilesList[i];
+				}
+				
 				spoll(fds, nbPLayers, 1);
 				printf("On passe ici\n");
 
@@ -212,7 +236,6 @@ int main(int argc, char **argv){
 
 				// Lecture de l'emplacement de chaque processus enfant
 				for (j = 0; j < nbPLayers; j++) {
-					
 					if(fds[j].revents & POLLIN){
 						int placement;
 						sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
@@ -221,7 +244,6 @@ int main(int argc, char **argv){
 					}
 				}
 			}
-			
 		}
 		printf("\nFin du jeu\n");
 		calculerScores(tabPlayers, nbPLayers);
