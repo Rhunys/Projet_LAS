@@ -37,7 +37,7 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
     initPlayerGrids(tabPlayers, nbPlayers);
     initializeSacTuiles();
     
-    for (int i = 0; i < TURNS; i++)
+    /*for (int i = 0; i < TURNS; i++)
     {   
         int tuile = tuileAuHasard();
         int nbPlayersAlreadyPlayed = 0;
@@ -86,7 +86,7 @@ void gameLoop(Player *tabPlayers, int nbPlayers)
     char *classement = afficherClassement(tabPlayers, nbPlayers);
     printf("%s\n", classement);
 
-    freePlayerGrids(tabPlayers, nbPlayers);
+    freePlayerGrids(tabPlayers, nbPlayers);*/
 }
 
 // Initialize the bag of tiles
