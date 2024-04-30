@@ -4,19 +4,22 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include "message.h"
 #include "utils_v1.h"
 #include "ipc.h"
+#include "game.h"
 
+
+#define MAX_PLAYERS 2
 #define BACKLOG 5
-#define TIME_INSCRIPTION 20
-#define PERM 0666
+#define TIME_INSCRIPTION 30
+#define PERM 0666 
 #define KEY 123
 #define TAILLE 80
 
-typedef struct ServerChild
-{
+typedef struct ServerChild{
 	int pipe[2];
 	int pipe2[2];
 	int sockfd;
@@ -27,14 +30,18 @@ Player tabPlayers[MAX_PLAYERS];
 ServerChild tabServerChild[MAX_PLAYERS];
 
 volatile sig_atomic_t end_inscriptions = 0;
+volatile sig_atomic_t end_game = 0;
 
 void endServerHandler(int sig)
 {
 	end_inscriptions = 1;
 }
 
-void disconnect_players(Player *tabPlayers, int nbPlayers)
-{
+void endGameHandler(int sig){
+		end_game = 1;
+}
+
+void disconnect_players(Player *tabPlayers, int nbPlayers){
 	for (int i = 0; i < nbPlayers; i++)
 		sclose(tabPlayers[i].sockfd);
 	return;
@@ -71,39 +78,37 @@ void run(void *argv, void *argv2, void *argv3)
 	sclose(pipefd[1]);
 	sclose(pipefd2[0]);
 	int nbJoueurs = 0;
-	StructMessage msg;
-	int nbScore = 0;
 
-	while (nbJoueurs < MAX_PLAYERS)
+
+	while (!end_game)
 	{
+		for (int i = 0; i < GRID_LENGTH; i++){
 
-		sread(pipefd[0], &tuileAuHasard, sizeof(int));
-		printf("Valeur reçue par le parent : %d\n", tuileAuHasard);
+			sread(pipefd[0], &tuileAuHasard, sizeof(int));
+			printf("Valeur reçue par le parent : %d\n", tuileAuHasard);
 
-		swrite(sockfd, &tuileAuHasard, sizeof(int));
-		printf("Serveur envoie au client : %d\n", tuileAuHasard);
+			swrite(sockfd, &tuileAuHasard, sizeof(int));
+			printf("Serveur envoie au client : %d\n", tuileAuHasard);
 
-		int emplacement;
+			int emplacement;
 
-		sread(sockfd, &emplacement, sizeof(int));
-		printf("Le client a décide de placer sa tuile en %d \n", emplacement);
+			sread(sockfd, &emplacement, sizeof(int));
+			printf("Le client a décide de placer sa tuile en %d \n", emplacement);
 
-		swrite(pipefd2[1], &emplacement, sizeof(int));
-		printf("envoie de l'emplacement au server \n");
+			swrite(pipefd2[1], &emplacement, sizeof(int));
+			printf("envoie de l'emplacement au server \n");
 
-		nbJoueurs++;
-	}
-	sleep(5);
+		}
+		printf("Partie finie  \n");
+		sread(pipefd[0],&nbJoueurs,sizeof(int));
 
-	while(nbScore < 2){	
-
-		sread(sockfd, &msg, sizeof(msg)); // Récupération du msg start_score
-		swrite(pipefd2[1],&msg,sizeof(msg));
 		// Récupération du total 
 		int score;
 		sread(sockfd,&score,sizeof(int));
+
 		// envoie du nombre de joeuru a l'enfant 
 		swrite(sockfd,&nbJoueurs,sizeof(int));
+
 		// envoie du score au parent 
 		swrite(pipefd2[1],&score,sizeof(int));
 
@@ -124,15 +129,18 @@ void run(void *argv, void *argv2, void *argv3)
 			tabRanking->tabPlayer->score= tabRankingSM->tabPlayer->score;
 			swrite(sockfd,&tabRanking->tabPlayer,sizeof(TabPlayer)); 
 		}
-
 	}
-	
-
 
 }
 
 int main(int argc, char **argv)
 {
+	if(argc < 2){
+        perror("Missing port");
+        exit(1);
+    }
+    int SERVER_PORT = atoi(argv[1]);
+	int* tilesList = malloc(GRID_LENGTH * 3 * sizeof(int));
 	int sockfd, newsockfd, i;
 	StructMessage msg;
 	struct pollfd fds[MAX_PLAYERS];
@@ -214,96 +222,112 @@ int main(int argc, char **argv)
 
 	if (msg.code == START_GAME)
 	{
-		printf("La partie va commencer \n");
+		
+	printf("La partie va commencer \n");
 
-		// CREATION DES TUILES 
+	// filedes[0] -> lire le pipe
+	// filedes[1] -> écrire sur pipe
 
-		for (int i = 0; i < nbPLayers; i++)
-		{
-			printf("Création du server fils numéro : %d \n ", i);
+	for(int i = 0 ; i < nbPLayers; i ++){
+		printf("Création du server fils numéro : %d \n " , i);
 
-			// 1/ Création du Pipe
-			spipe(tabServerChild[i].pipe);
-			spipe(tabServerChild[i].pipe2);
+		// 1/ Création du Pipe 
+		spipe(tabServerChild[i].pipe);
+		spipe(tabServerChild[i].pipe2);
 
-			fork_and_run3(run, tabServerChild[i].pipe, tabServerChild[i].pipe2, &tabPlayers[i].sockfd);
+		fork_and_run3(run, tabServerChild[i].pipe, tabServerChild[i].pipe2,&tabPlayers[i].sockfd);
 
-			sclose(tabServerChild[i].pipe[0]);
-			sclose(tabServerChild[i].pipe2[1]);
+		sclose(tabServerChild[i].pipe[0]);
+		sclose(tabServerChild[i].pipe2[1]);
 
-			fds[i].fd = tabServerChild[i].pipe2[0];
-			fds[i].events = POLLIN;
-		}
+		fds[i].fd = tabServerChild[i].pipe2[0];
+		fds[i].events = POLLIN;
 
-		int nbJoueurs = 0;
-		while (nbJoueurs < MAX_PLAYERS) //************* Faire boucle de 20 tours *****************
-		{
+	}
+	initializeSacTuiles();
 
-			int j = 0;
-			int tuileAuHasard = 20;
+	initPlayerGrids(tabPlayers, nbPLayers);
+
+	while (!end_game) {
+		for (int i = 0; i < GRID_LENGTH; i++){
+			int j;
+
+			int tuile;
+			if(tilesList[0] == 0){
+			tuile = tuileAuHasard();
+			} else {
+			tuile = tilesList[i];
+			}
+
 			spoll(fds, nbPLayers, 1);
+			printf("On passe ici\n");
 
 			// Envoi de la tuile aléatoire à chaque processus enfant
-			for (j = 0; j < nbPLayers; j++)
-			{
-				swrite(tabServerChild[j].pipe[1], &tuileAuHasard, sizeof(tuileAuHasard));
+			for (j = 0; j < nbPLayers; j++) {
+			swrite(tabServerChild[j].pipe[1], &tuile, sizeof(tuile));
 			}
 
 			// Lecture de l'emplacement de chaque processus enfant
-			for (j = 0; j < nbPLayers; j++)
+			for (j = 0; j < nbPLayers; j++) {
+
+			if(fds[j].events & POLLIN){
+			int placement;
+			sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
+			placerTuile(&placement, tuile, tabPlayers[j].grid);
+			printf("voici la grille : \n");
+			for (int i = 0; i < 20; i++)
 			{
-
-				if (fds[j].revents & POLLIN)
-				{
-					int placement;
-					sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
-					printf("le client place la tuile à l'emplacement %d\n", placement);
-				}
+			printf("%d ",tabPlayers[j].grid[i]);
 			}
-			nbJoueurs++;
+			printf("\n");
+			printf("le client place la tuile à l'emplacement %d\n", placement);
 		}
-		
+		}
 	}
+		// Envoie du nombre de joueurs 
+		for (int i = 0; i < nbPLayers; i++){
+			swrite(tabServerChild[i].pipe[1],&nbPLayers, sizeof(msg));		
+		}
 
-	
-	int nbScore = 0;
-
-	while(nbScore < 2){
-
+		// Récupération du code start score 
 		for (int i = 0; i < nbPLayers; i++){
 			sread(tabServerChild[i].pipe2[0],&msg, sizeof(msg));		
 		}
 		
-		printf("code recu : %d \n " , msg.code);
-		if(msg.code == START_SCORE){
-			// RÉCUPÉRATION DU SCORE
-			printf("PARTIE FINIE");
+		printf("PARTIE FINIE");
 
 
-			sem_down0(semId);
+		sem_down0(semId);
 
-			int score;
-			// Lecture des score 
-			for (int i = 0; i < nbPLayers; i++)
-				{
-					sread(tabServerChild[i].pipe2[0], &score, sizeof(int));	
-					tabPlayers->score = score;
-				}
-			// **************Trier les scores avce fonction game *******************
-			// Trier tabPlayers
+		int score;
+		// Lecture des score 
+		for (int i = 0; i < nbPLayers; i++){
+			sread(tabServerChild[i].pipe2[0], &score, sizeof(int));	
+			calculerScores(tabPlayers,nbPLayers);
+		}
+			
+		afficherClassement(tabPlayers,nbPLayers);
 
-			//Envoie du score a l'ipc 
-
-			for(int i=0 ; i< nbPLayers; i++){
-					strcpy(tablePlayerIPC->tabPlayer->pseudo ,tabPlayers[i].pseudo);
-					tablePlayerIPC->tabPlayer->score = tabPlayers[i].score;
-				}
-
-			sem_up0(semId);
-
+		//Envoie du score a l'ipc 
+		for(int i=0 ; i< nbPLayers; i++){
+			strcpy(tablePlayerIPC->tabPlayer->pseudo ,tabPlayers[i].pseudo);
+			tablePlayerIPC->tabPlayer->score = tabPlayers[i].score;
 		}
 
-	}
-	
+		sem_up0(semId);
 
+		}
+	}
+
+	printf("\nFin du jeu\n");
+	afficherScores(tabPlayers, nbPLayers);
+	freePlayerGrids(tabPlayers, nbPLayers);
+	deleteMemory(sharedMemory);
+	disconnect_players(tabPlayers, nbPLayers);
+	sclose(sockfd);
+	exit(0);
 }
+
+
+
+

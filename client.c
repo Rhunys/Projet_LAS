@@ -10,6 +10,7 @@
 
 #include "message.h"
 #include "utils_v1.h"
+#include "game.h"
 
 /**
  * PRE: serverIP : a valid IP address
@@ -26,6 +27,12 @@ int initSocketClient(char *serverIP, int serverPort)
 }
 
 int main(int argc, char **argv){
+
+	if(argc < 2){
+        perror("Missing port");
+        exit(1);
+    }
+    int SERVER_PORT = atoi(argv[1]);
 
 	char pseudo[MAX_PSEUDO];
 	int sockfd;
@@ -71,36 +78,59 @@ int main(int argc, char **argv){
 	sread(sockfd, &msg, sizeof(msg));
 	
 	if (msg.code == START_GAME){
-		int nbJoueurs= 0;
-		int joueurRanking = 0; 
-			
-		while (nbJoueurs < 2) {
 			printf("La partie va commencer \n ");
+		int *grid;
+		grid = initGrid(); // sert uniquement pour des tests
+		int emplacement;
+	    char buffer[10]; // Taille suffisante pour stocker une entrée d'entier
+		printf("La partie va commencer \n\n ");
+		int nbJoueurs= 0;
+
 			
-			// Lire la tuile du serveur
-			if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
-				perror("Erreur de lecture du serveur");
-				break; 
+		while (1) {
+			
+			for (int i = 0; i < GRID_LENGTH; i++){
+
+				// Lire la tuile du serveur
+				if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
+					perror("Erreur de lecture du serveur");
+					break; // Sortir de la boucle infinie
+				}
+
+				printf("Voici la tuile à placer : %d\n", tuileAuHasard);
+
+				printf("\nVoici votre grille actuelle : \n");
+				for (int i = 0; i < 20; i++)
+				{
+					printf("%d ",grid[i]);
+				}
+				printf("\n");
+				
+				
+
+				printf("\nOù souhaitez vous placer a tuile ?\n");
+
+				sread(0,buffer, sizeof(buffer)); //lecture de l'emplacement au clavier
+				emplacement = atoi(buffer); // Convertit la chaîne de caractères en entier
+
+				while (!placerTuile(&emplacement, tuileAuHasard, grid)){//vérifie l'emplacement dans la grille et place la tuile
+					printf("Où souhaitez vous placer a tuile ?\n");
+					sread(0,buffer, sizeof(buffer));
+					emplacement = atoi(buffer); 
+				}
+				printf("----------------------------------------\n");
+
+				// Envoyer l'emplacement au serveur
+				if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
+					perror("Erreur d'écriture vers le serveur");
+					break; // Sortir de la boucle infinie
+				}
 			}
 
-			printf("Client reçoit du serveur : %d\n", tuileAuHasard);
 
-			int emplacement = 2;
-			printf("Le client choisit de poser sa tuile à %d \n", emplacement);
+			// Tant que les deux joueurs n'ont pas recu leurs score 
 
-			// Envoyer l'emplacement au serveur
-			if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
-				perror("Erreur d'écriture vers le serveur");
-				break; 
-			}
-			nbJoueurs++;
-		}
-		while(joueurRanking < 2){ // Tant que les deux joueurs n'ont pas recu leurs score 
-
-			printf("envoie du code start score");
-			msg.code = START_SCORE;
-			swrite(sockfd, &msg, sizeof(msg));
-			printf("message.code ; attentdu : MONSCORE : %d\n ", msg.code);
+			
 
 			printf("envoie du score au server fils qu est de 10 ");
 			int score = 10; 
@@ -115,22 +145,19 @@ int main(int argc, char **argv){
 				exit(1);
 			}
 
-			for (int i = 0; i < size; ++i){
 			TabPlayer* newplayer;
+			for (int i = 0; i < size; ++i){
 			sread(sockfd,&newplayer,sizeof(TabPlayer));
 			strcpy(players->tabPlayer->pseudo,newplayer->tabPlayer->pseudo);
 			players->tabPlayer->score = newplayer->tabPlayer->score;
 			}
-			//   printRanking(players,size); **** AFFICHER RANKING METHODE GAME.C *****
+			afficherScores(newplayer->tabPlayer,nbJoueurs);
+		
 		
 		}
-
 		
-
 	}
 
-	
-
-	
-	
+	printf("\nFin du jeu\n");
 }
+

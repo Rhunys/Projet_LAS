@@ -1,10 +1,10 @@
 #ifndef _MESSAGES_H_
 #define _MESSAGES_H_
 
-#define SERVER_PORT 9520
 #define SERVER_IP "127.0.0.1" /* localhost */
 #define MAX_PSEUDO 256
 #define MAX_PLAYERS 2
+#define GRID_LENGTH 20
 
 #define INSCRIPTION_REQUEST 10
 #define INSCRIPTION_OK 11
@@ -12,6 +12,7 @@
 #define START_GAME 13
 #define CANCEL_GAME 14
 #define START_SCORE 15
+#define END_GAME 16
 
 /* struct message used between server and client */
 typedef struct
