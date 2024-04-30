@@ -11,7 +11,7 @@
 
 #define MAX_PLAYERS 2
 #define BACKLOG 5
-#define TIME_INSCRIPTION 20
+#define TIME_INSCRIPTION 30
 #define PERM 0666 
 #define KEY 123
 #define TAILLE 80
@@ -112,7 +112,8 @@ int main(int argc, char **argv){
 	// char winnerName[256];
 	
 	// Armement de l'alarme
-	ssigaction(SIGINT, endGameHandler);
+	//ssigaction(SIGINT, endGameHandler);
+	ssigaction(SIGALRM, endServerHandler);
 
 	sockfd = initSocketServer(SERVER_PORT);
 	printf("Le serveur tourne sur le port : %i \n", SERVER_PORT);
