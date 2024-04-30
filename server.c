@@ -13,7 +13,7 @@
 #define MAX_PLAYERS 2
 #define GRID_LENGTH 20
 #define BACKLOG 5
-#define TIME_INSCRIPTION 20
+#define TIME_INSCRIPTION 30
 #define PERM 0666 
 #define KEY 123
 #define TAILLE 80
@@ -92,6 +92,12 @@ void run(void * argv, void * argv2, void * argv3){
 }
 
 int main(int argc, char **argv){
+	if(argc < 2){
+        perror("Missing port");
+        exit(1);
+    }
+    int SERVER_PORT = atoi(argv[1]);
+	
 	int sockfd, newsockfd, i;
 	StructMessage msg;
 	struct pollfd fds[MAX_PLAYERS];
@@ -125,7 +131,8 @@ int main(int argc, char **argv){
 	// char winnerName[256];
 	
 	// Armement de l'alarme
-	ssigaction(SIGINT, endGameHandler);
+	//ssigaction(SIGINT, endGameHandler);
+	ssigaction(SIGALRM, endServerHandler);
 
 	sockfd = initSocketServer(SERVER_PORT);
 	printf("Le serveur tourne sur le port : %i \n", SERVER_PORT);
@@ -234,14 +241,20 @@ int main(int argc, char **argv){
 					swrite(tabServerChild[j].pipe[1], &tuile, sizeof(tuile));
 				}
 
-				// Lecture de l'emplacement de chaque processus enfant
-				for (j = 0; j < nbPLayers; j++) {
-					if(fds[j].revents & POLLIN){
-						int placement;
-						sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
-						placerTuile(placement, tuile, tabPlayers[j].grid);
-						printf("Le client place la tuile à l'emplacement %d\n", placement);
+			// Lecture de l'emplacement de chaque processus enfant
+			for (j = 0; j < nbPLayers; j++) {
+				
+				if(fds[j].events & POLLIN){
+					int placement;
+					sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
+					placerTuile(&placement, tuile, tabPlayers[j].grid);
+					printf("voici la grille : \n");
+					for (int i = 0; i < 20; i++)
+					{
+						printf("%d ",tabPlayers[j].grid[i]);
 					}
+					printf("\n");
+					printf("le client place la tuile à l'emplacement %d\n", placement);
 				}
 			}
 		}
@@ -253,6 +266,7 @@ int main(int argc, char **argv){
 		disconnect_players(tabPlayers, nbPLayers);
 		sclose(sockfd);
 		exit(0);
+		}
 	}
 }
 	

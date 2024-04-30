@@ -54,7 +54,7 @@ int tuileAuHasard();
  * POST: places the tile at the given position in the grid
  * RES:  true if a tile has been placed, false otherwise
  */
-bool placerTuile(int position, int tuile, int *grid);
+bool placerTuile(int *position, int tuile, int *grid);
 
 /**
  * PRE:  tabPlayers: a valid array of players
@@ -92,7 +92,6 @@ char* afficherClassement(Player *tabPlayers, int nbPlayers);
  */
 int comparePlayers(const void *a, const void *b);
 
-int *sacTuiles;
-int tuilesRestantes;
+
 
 #endif //_GAME_H
