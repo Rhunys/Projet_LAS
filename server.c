@@ -249,7 +249,7 @@ int main(int argc, char **argv){
 					sread(tabServerChild[j].pipe2[0], &placement, sizeof(int));
 					placerTuile(&placement, tuile, tabPlayers[j].grid);
 					printf("voici la grille : \n");
-					for (int i = 0; i < 20; i++)
+					for (int i = 0; i < GRID_LENGTH; i++)
 					{
 						printf("%d ",tabPlayers[j].grid[i]);
 					}

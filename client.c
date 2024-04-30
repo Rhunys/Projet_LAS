@@ -41,7 +41,6 @@ int main(int argc, char **argv){
 
 	StructMessage msg;
 	
-
 	/* retrieve player name */
 	printf("Bienvenue dans le programe d'inscription au serveur de jeu\n");
 	printf("Pour participer entrez votre nom :\n");
@@ -54,7 +53,6 @@ int main(int argc, char **argv){
 	sockfd = initSocketClient(SERVER_IP, SERVER_PORT);
 	
 	swrite(sockfd, &msg, sizeof(msg));
-
 
 	/* wait server response */
 	sread(sockfd, &msg, sizeof(msg));
@@ -73,7 +71,6 @@ int main(int argc, char **argv){
 		break;
 	}
 
-
 	/* wait start of game or cancel */
 	sread(sockfd, &msg, sizeof(msg));
 	
@@ -85,8 +82,6 @@ int main(int argc, char **argv){
 		printf("La partie va commencer \n\n ");
 
 	    while(1){
-			
-			
 			// Lire la tuile du serveur
 			if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
 				perror("Erreur de lecture du serveur");
@@ -102,8 +97,6 @@ int main(int argc, char **argv){
 			}
 			printf("\n");
 			
-			
-
 			printf("\nOù souhaitez vous placer a tuile ?\n");
 
 			sread(0,buffer, sizeof(buffer)); //lecture de l'emplacement au clavier
