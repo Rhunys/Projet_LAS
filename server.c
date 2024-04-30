@@ -112,7 +112,7 @@ int main(int argc, char **argv){
 	// char winnerName[256];
 	
 	// Armement de l'alarme
-	//ssigaction(SIGINT, endGameHandler);
+	ssigaction(SIGINT, endGameHandler);
 	ssigaction(SIGALRM, endServerHandler);
 
 	sockfd = initSocketServer(SERVER_PORT);
