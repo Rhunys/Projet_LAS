@@ -3,12 +3,17 @@
 
 #define SERVER_IP "127.0.0.1" /* localhost */
 #define MAX_PSEUDO 256
+#define MAX_PLAYERS 2
+#define GRID_LENGTH 20
 
 #define INSCRIPTION_REQUEST 10
 #define INSCRIPTION_OK 11
 #define INSCRIPTION_KO 12
 #define START_GAME 13
 #define CANCEL_GAME 14
+#define START_SCORE 15
+#define END_GAME 16
+
 
 /* struct message used between server and client */
 typedef struct
@@ -24,5 +29,10 @@ typedef struct{
   int* grid;
   int score;
 } Player;
+
+typedef struct{
+  Player tabPlayer[MAX_PLAYERS];
+  int nbPlayer;
+}TabPlayer;
 
 #endif

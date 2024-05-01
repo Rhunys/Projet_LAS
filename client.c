@@ -75,47 +75,85 @@ int main(int argc, char **argv){
 	sread(sockfd, &msg, sizeof(msg));
 	
 	if (msg.code == START_GAME){
+			printf("La partie va commencer \n ");
 		int *grid;
 		grid = initGrid(); // sert uniquement pour des tests
 		int emplacement;
 	    char buffer[10]; // Taille suffisante pour stocker une entrée d'entier
 		printf("La partie va commencer \n\n ");
 
-	    while(1){
-			// Lire la tuile du serveur
-			if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
-				perror("Erreur de lecture du serveur");
-				break; // Sortir de la boucle infinie
-			}
-
-			printf("Voici la tuile à placer : %d\n", tuileAuHasard);
-
-			printf("\nVoici votre grille actuelle : \n");
-			for (int i = 0; i < 20; i++)
-			{
-				printf("%d ",grid[i]);
-			}
-			printf("\n");
 			
-			printf("\nOù souhaitez vous placer a tuile ?\n");
+		while (1) {
+			
+			for (int i = 0; i < GRID_LENGTH; i++){
 
-			sread(0,buffer, sizeof(buffer)); //lecture de l'emplacement au clavier
-			emplacement = atoi(buffer); // Convertit la chaîne de caractères en entier
+				// Lire la tuile du serveur
+				if (sread(sockfd, &tuileAuHasard, sizeof(int)) <= 0) {
+					perror("Erreur de lecture du serveur");
+					break; // Sortir de la boucle infinie
+				}
 
-			while (!placerTuile(&emplacement, tuileAuHasard, grid)){//vérifie l'emplacement dans la grille et place la tuile
-				printf("Où souhaitez vous placer a tuile ?\n");
-				sread(0,buffer, sizeof(buffer));
-				emplacement = atoi(buffer); 
+				printf("Voici la tuile à placer : %d\n", tuileAuHasard);
+
+				printf("\nVoici votre grille actuelle : \n");
+				for (int i = 0; i < 20; i++)
+				{
+					printf("%d ",grid[i]);
+				}
+				printf("\n");
+				
+				
+
+				printf("\nOù souhaitez vous placer a tuile ?\n");
+
+				sread(0,buffer, sizeof(buffer)); //lecture de l'emplacement au clavier
+				emplacement = atoi(buffer); // Convertit la chaîne de caractères en entier
+
+				while (!placerTuile(&emplacement, tuileAuHasard, grid)){//vérifie l'emplacement dans la grille et place la tuile
+					printf("Où souhaitez vous placer a tuile ?\n");
+					sread(0,buffer, sizeof(buffer));
+					emplacement = atoi(buffer); 
+				}
+				printf("----------------------------------------\n");
+
+				// Envoyer l'emplacement au serveur
+				if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
+					perror("Erreur d'écriture vers le serveur\n");
+					break; // Sortir de la boucle infinie
+				}
 			}
-			printf("----------------------------------------\n");
 
-			// Envoyer l'emplacement au serveur
-			if (swrite(sockfd, &emplacement, sizeof(int)) <= 0) {
-				perror("Erreur d'écriture vers le serveur");
-				break; // Sortir de la boucle infinie
+
+		
+
+			printf("envoie du score au server fils qu est de 10 \n");
+			int score = 10; 
+			swrite(sockfd,&score,sizeof(int));
+
+			// Récupération de la taille 
+			int size;
+			sread(sockfd, &size, sizeof(int));
+
+			// Allouer de la mémoire pour le tableau
+			TabPlayer* newplayer = smalloc(size * sizeof(TabPlayer));
+
+			// Recevoir le tableau
+			for(int i = 0; i < size; i++) {
+    			sread(sockfd, &(newplayer[i]), sizeof(TabPlayer));
+				printf("score dans tabplayer : %d \n " , newplayer->tabPlayer->score);
 			}
+
+			afficherScores(newplayer->tabPlayer,size);
+			
+
+			
+		
+		
 		}
+		
+		
 	}
 
 	printf("\nFin du jeu\n");
 }
+

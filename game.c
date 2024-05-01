@@ -24,7 +24,7 @@ int pointsSerie[20] = {0, 1, 3, 5, 7, 9, 11, 15, 20, 25, 30, 35, 40, 50, 60, 70,
 void initializeSacTuiles()
 {
     sacTuiles = malloc(TILES_MAX * sizeof(int));
-    tuilesRestantes = TILES_MAX;
+    tuilesRestantes = 40;
     // Fill the bag with 1 except index 10 to 18 with 2
     for (int i = 0; i < TILES_MAX; i++)
     {
