@@ -5,6 +5,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "message.h"
 #include "utils_v1.h"
@@ -117,11 +118,15 @@ int main(int argc, char **argv){
 
 	if(argc == 3){
 		int i = 0;
-    	int num;
+    	char buffer[3];
 		int file = sopen(argv[2], 0, O_RDONLY);
 
-		while (i < GRID_LENGTH && read(file, &num, sizeof(int)) == sizeof(int)) {
-			tilesList[i] = num;
+		while (i < GRID_LENGTH && read(file, buffer, sizeof(buffer)) == sizeof(buffer)) {
+			if(strcmp(buffer, "Jo") == 0){
+				tilesList[i] = 31;
+			} else {
+				tilesList[i] = atoi(buffer);
+			}
 			i++;
 		}
 
