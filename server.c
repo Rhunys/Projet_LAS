@@ -6,6 +6,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 
 #include "message.h"
 #include "utils_v1.h"
@@ -124,14 +125,7 @@ void run(void *argv, void *argv2, void *argv3)
 
 }
 
-int main(int argc, char **argv)
-{
-	if(argc < 2){
-        perror("Missing port");
-        exit(1);
-    }
-    int SERVER_PORT = atoi(argv[1]);
-	int* tilesList = malloc(GRID_LENGTH * 3 * sizeof(int));
+int main(int argc, char **argv){
 	int sockfd, newsockfd, i;
 	StructMessage msg;
 	struct pollfd fds[MAX_PLAYERS];

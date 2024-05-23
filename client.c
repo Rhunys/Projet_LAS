@@ -60,7 +60,6 @@ int main(int argc, char **argv){
 	
 	swrite(sockfd, &msg, sizeof(msg));
 
-
 	/* wait server response */
 	sread(sockfd, &msg, sizeof(msg));
 
@@ -77,7 +76,6 @@ int main(int argc, char **argv){
 		printf("Réponse du serveur non prévue %d\n", msg.code);
 		break;
 	}
-
 
 	/* wait start of game or cancel */
 	sread(sockfd, &msg, sizeof(msg));
