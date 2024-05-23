@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 #include "utils_v1.h"
-#include "message.h"
+#include "message.h" 
 
 #define KEY 123 
 #define SEM_KEY 369
@@ -17,7 +17,7 @@
 int createSharedMemory(){
      int shim_id = sshmget(KEY, sizeof(TabPlayer), IPC_CREAT | PERM); 
      return shim_id;
-}
+} 
 
 TabPlayer* getSharedMemory(){
     int shm_id = sshmget(KEY, sizeof(TabPlayer), 0);

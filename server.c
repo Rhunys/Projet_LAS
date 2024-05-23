@@ -1,3 +1,4 @@
+// Renaux Maureen Collard Gauthier Cansse Kyle Groupe 21
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,12 +54,9 @@ void disconnect_players(Player *tabPlayers, int nbPlayers){
  *       on failure, displays error cause and quits the program
  * RES:  return socket file descriptor
  */
-int initSocketServer(int port)
+int initSocketServer(int port) 
 {
 	int sockfd = ssocket();
-
-	// setsockopt -> to avoid Address Already in Use
-	// to do before bind !
 	int option = 1;
 	setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(int));
 
@@ -78,8 +76,6 @@ void run(void *argv, void *argv2, void *argv3)
 	sclose(pipefd[1]);
 	sclose(pipefd2[0]);
 	
-
-
 	while (!end_game)
 	{
 		for (int i = 0; i < GRID_LENGTH; i++){
@@ -99,24 +95,24 @@ void run(void *argv, void *argv2, void *argv3)
 			printf("envoie de l'emplacement au server \n");
 
 		}
-		printf("Partie finie  \n");
+		printf("******************** CALCUL DES POINTS ******************** \n");
 
+		
+		int semID = getSemaphore();
+		
+		// Envoyer la taille du tableau avant d'envoyer le tableau lui-même
+		int size = MAX_PLAYERS;
+		swrite(sockfd, &size, sizeof(int));
+		
 		// Récupération du total 
 		int score;
 		sread(sockfd,&score,sizeof(int));
 
 		// envoie du score au parent 
 		swrite(pipefd2[1],&score,sizeof(int));
-
-		int semID = getSemaphore();
 		
-		// Envoyer la taille du tableau avant d'envoyer le tableau lui-même
-		int size = MAX_PLAYERS;
-		swrite(sockfd, &size, sizeof(int));
-
 		// Récupération de la mémoire partagée 
 		TabPlayer * tabRankingSM = getSharedMemory();
-		//TabPlayer* tabRanking = smalloc (MAX_PLAYERS * sizeof(TabPlayer));
 			
 		// Envoyer le tableau
 		for(int i = 0; i < MAX_PLAYERS; i++) {
@@ -160,7 +156,7 @@ int main(int argc, char **argv)
 	while (!end_inscriptions)
 	{
 
-		newsockfd = accept(sockfd, NULL, NULL); // saccept() exit le programme si accept a été interrompu par l'alarme
+		newsockfd = accept(sockfd, NULL, NULL); 
 
 		if (newsockfd > 0)
 		{
@@ -217,11 +213,6 @@ int main(int argc, char **argv)
 
 	if (msg.code == START_GAME)
 	{
-		
-	printf("La partie va commencer \n");
-
-	// filedes[0] -> lire le pipe
-	// filedes[1] -> écrire sur pipe
 
 	for(int i = 0 ; i < nbPLayers; i ++){
 		printf("Création du server fils numéro : %d \n " , i);
@@ -279,18 +270,14 @@ int main(int argc, char **argv)
 		}
 	}
 		
-		printf("PARTIE FINIE \n");
+		printf("******************** PARTIE FINIE ********************\n");
 
-
-		//sem_down0(semId);
 
 		int score;
 		// Lecture des score 
 		for (int i = 0; i < nbPLayers; i++){
 			sread(tabServerChild[i].pipe2[0], &score, sizeof(int));	
 			tabPlayers[i].score = score;
-			//calculerScores(tabPlayers,nbPLayers);
-			printf("%d \n" , score);
 		}
 			
 		afficherClassement(tabPlayers,nbPLayers);

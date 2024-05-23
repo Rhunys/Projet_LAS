@@ -182,9 +182,10 @@ bool placerTuile(int *position, int tuile, int *grid)
     return true;
 }
 
-void calculerScores(Player *tabPlayers, int nbPlayers)
+int calculerScores(Player *tabPlayers, int nbPlayers)
 {   
     printf("\nCalcul des scores\n");
+    int scoreFinal = 0;
     for (int i = 0; i < nbPlayers; i++)
     {
         Player player = tabPlayers[i];
@@ -205,6 +206,8 @@ void calculerScores(Player *tabPlayers, int nbPlayers)
         player.score += pointsSerie[serie-1];
         tabPlayers[i] = player;
     }
+    printf("score est = à %d \n ", scoreFinal);
+    return scoreFinal;
 }
 
 void afficherScores(Player *tabPlayers, int nbPlayers)

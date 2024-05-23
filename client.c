@@ -12,6 +12,7 @@
 #include "utils_v1.h"
 #include "game.h"
 
+volatile sig_atomic_t end_game = 0;
 /**
  * PRE: serverIP : a valid IP address
  *      serverPort: a valid port number
@@ -24,6 +25,9 @@ int initSocketClient(char *serverIP, int serverPort)
 	int sockfd = ssocket();
 	sconnect(serverIP, serverPort, sockfd);
 	return sockfd;
+}
+void endGameHandler(int sig){
+		end_game = 1;
 }
 
 int main(int argc, char **argv){
@@ -40,7 +44,8 @@ int main(int argc, char **argv){
 	int tuileAuHasard;
 
 	StructMessage msg;
-	
+	TabPlayer* newplayer;
+	ssigaction(SIGINT, endGameHandler);
 
 	/* retrieve player name */
 	printf("Bienvenue dans le programe d'inscription au serveur de jeu\n");
@@ -78,15 +83,16 @@ int main(int argc, char **argv){
 	sread(sockfd, &msg, sizeof(msg));
 	
 	if (msg.code == START_GAME){
-			printf("La partie va commencer \n ");
 		int *grid;
-		grid = initGrid(); // sert uniquement pour des tests
+		 // sert uniquement pour des tests
 		int emplacement;
 	    char buffer[10]; // Taille suffisante pour stocker une entrée d'entier
-		printf("La partie va commencer \n\n ");
+		
 
 			
-		while (1) {
+		while (!end_game) {
+			grid = initGrid();
+			printf("La partie va commencer \n\n ");
 			
 			for (int i = 0; i < GRID_LENGTH; i++){
 
@@ -126,37 +132,30 @@ int main(int argc, char **argv){
 				}
 			}
 
-
 		
-
-			printf("envoie du score au server fils qu est de 10 \n");
-			int score = 10; 
-			swrite(sockfd,&score,sizeof(int));
-
 			// Récupération de la taille 
 			int size;
 			sread(sockfd, &size, sizeof(int));
 
+			int score = 10; 
+			printf("Le score est = à %d /n", score);
+			swrite(sockfd,&score,sizeof(int));
+
 			// Allouer de la mémoire pour le tableau
-			TabPlayer* newplayer = smalloc(size * sizeof(TabPlayer));
+			newplayer = smalloc(size * sizeof(TabPlayer));
 
 			// Recevoir le tableau
 			for(int i = 0; i < size; i++) {
     			sread(sockfd, &(newplayer[i]), sizeof(TabPlayer));
-				printf("score dans tabplayer : %d \n " , newplayer->tabPlayer->score);
 			}
 
 			afficherScores(newplayer->tabPlayer,size);
 			
-
-			
-		
-		
 		}
-		
 		
 	}
 
 	printf("\nFin du jeu\n");
+	free(newplayer);
 }
 

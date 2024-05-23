@@ -68,7 +68,7 @@ void gameLoop(Player *tabPlayers, int nbPlayers);
  *       nbPlayers: the number of players
  * POST: calculates the scores of the players
  */
-void calculerScores(Player *tabPlayers, int nbPlayers);
+int calculerScores(Player *tabPlayers, int nbPlayers);
 
 /**
  * PRE:  tabPlayers: a valid array of players
